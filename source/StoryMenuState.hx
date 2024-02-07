@@ -3,6 +3,12 @@ package;
 #if desktop
 import Discord.DiscordClient;
 #end
+
+#if android
+import flixel.input.touch.FlxTouch;
+import flixel.input.touch.FlxTouchManager;
+#end
+
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
@@ -84,6 +90,10 @@ class StoryMenuState extends MusicBeatState
 		changeWeek();
 		changeDifficulty();
 
+		#if android
+		addVirtualPad(LEFT_FULL, A_B_X_Y);
+		#end
+
 		super.create();
 
 		var bg = new FlxSprite(-200, -200);
@@ -126,6 +136,15 @@ class StoryMenuState extends MusicBeatState
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			movedBack = true;
 			MusicBeatState.switchState(new MainMenuState());
+		}
+
+		if(FlxG.keys.justPressed.CONTROL #if android || virtualPad.buttonX.justPressed #end)
+		{
+			#if android
+			removeVirtualPad();
+			#end
+			persistentUpdate = false;
+			openSubState(new GameplayChangersSubstate());
 		}
 
 		super.update(elapsed);

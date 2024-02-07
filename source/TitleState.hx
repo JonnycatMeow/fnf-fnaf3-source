@@ -37,6 +37,11 @@ import sys.io.File;
 import hxvlc.flixel.FlxVideo;
 #end
 
+#if android
+import flixel.input.touch.FlxTouch;
+import flixel.input.touch.FlxTouchManager;
+#end
+
 using StringTools;
 
 class TitleState extends MusicBeatState {
@@ -78,6 +83,10 @@ class TitleState extends MusicBeatState {
 	}
 
 	override public function create():Void {
+		#if android
+		FlxG.android.preventDefaultKeys = [BACK];
+		#end
+
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 
@@ -225,9 +234,11 @@ class TitleState extends MusicBeatState {
 
 		var pressedEnter:Bool = FlxG.keys.justPressed.ENTER || controls.ACCEPT;
 
-		#if mobile
-		for (touch in FlxG.touches.list) {
-			if (touch.justPressed) {
+		#if android
+		for (touch in FlxG.touches.list)
+		{
+			if (touch.justPressed)
+			{
 				pressedEnter = true;
 			}
 		}

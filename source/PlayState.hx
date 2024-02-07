@@ -65,6 +65,11 @@ import sys.FileSystem;
 import sys.io.File;
 #end
 
+#if android
+import flixel.input.touch.FlxTouch;
+import flixel.input.touch.FlxTouchManager;
+#end
+
 // Vs FNaF 3 Specific imports
 import SongUnlock;
 
@@ -546,7 +551,7 @@ class PlayState extends MusicBeatState
 		// "GLOBAL" SCRIPTS
 		#if LUA_ALLOWED
 		var filesPushed:Array<String> = [];
-		var foldersToCheck:Array<String> = [Paths.getPreloadPath('scripts/')];
+		var foldersToCheck:Array<String> = [SUtil.getPath() + Paths.getPreloadPath('scripts/')];
 
 		#if MODS_ALLOWED
 		foldersToCheck.insert(0, Paths.mods('scripts/'));
@@ -581,7 +586,7 @@ class PlayState extends MusicBeatState
 			luaFile = Paths.modFolders(luaFile);
 			doPush = true;
 		} else {
-			luaFile = Paths.getPreloadPath(luaFile);
+			luaFile = SUtil.getPath() + Paths.getPreloadPath(luaFile);
 			if(FileSystem.exists(luaFile)) {
 				doPush = true;
 			}
@@ -637,12 +642,12 @@ class PlayState extends MusicBeatState
 
 		var file:String = Paths.json(songName + '/dialogue'); //Checks for json/Psych Engine dialogue
 		if (OpenFlAssets.exists(file)) {
-			dialogueJson = DialogueBoxPsych.parseDialogue(file);
+			dialogueJson = DialogueBoxPsych.parseDialogue(SUtil.getPath() + file);
 		}
 
 		var file:String = Paths.txt(songName + '/' + songName + 'Dialogue'); //Checks for vanilla/Senpai dialogue
 		if (OpenFlAssets.exists(file)) {
-			dialogue = CoolUtil.coolTextFile(file);
+			dialogue = CoolUtil.coolTextFile(SUtil.getPath() + file);
 		}
 		var doof:DialogueBox = new DialogueBox(false, dialogue);
 		// doof.x += 70;
@@ -825,8 +830,10 @@ class PlayState extends MusicBeatState
 			botplayTxt.y = timeBarBG.y - 78;
 		}
 
+		#if desktop
 		discordImage = songName;
-
+		#end
+		
 		strumLineNotes.cameras = [camHUD];
 		grpNoteSplashes.cameras = [camHUD];
 		notes.cameras = [camHUD];
@@ -844,6 +851,10 @@ class PlayState extends MusicBeatState
 		laneUnderlay.cameras = [camHUD];
 		laneUnderlayOpponent.cameras = [camHUD];
 
+		#if android
+		addAndroidControls();
+		#end
+
 		startingSong = true;
 		
 		#if LUA_ALLOWED
@@ -857,7 +868,7 @@ class PlayState extends MusicBeatState
 			}
 			else
 			{
-				luaToLoad = Paths.getPreloadPath('custom_notetypes/' + notetype + '.lua');
+				luaToLoad = SUtil.getPath() + Paths.getPreloadPath('custom_notetypes/' + notetype + '.lua');
 				if(FileSystem.exists(luaToLoad))
 				{
 					luaArray.push(new FunkinLua(luaToLoad));
@@ -881,7 +892,7 @@ class PlayState extends MusicBeatState
 			}
 			else
 			{
-				luaToLoad = Paths.getPreloadPath('custom_events/' + event + '.lua');
+				luaToLoad = SUtil.getPath() + Paths.getPreloadPath('custom_events/' + event + '.lua');
 				if(FileSystem.exists(luaToLoad))
 				{
 					luaArray.push(new FunkinLua(luaToLoad));
@@ -904,7 +915,7 @@ class PlayState extends MusicBeatState
 		// SONG SPECIFIC SCRIPTS
 		#if LUA_ALLOWED
 		var filesPushed:Array<String> = [];
-		var foldersToCheck:Array<String> = [Paths.getPreloadPath('data/' + Paths.formatToSongPath(SONG.song) + '/')];
+		var foldersToCheck:Array<String> = [SUtil.getPath() + Paths.getPreloadPath('data/' + Paths.formatToSongPath(SONG.song) + '/')];
 
 		#if MODS_ALLOWED
 		foldersToCheck.insert(0, Paths.mods('data/' + Paths.formatToSongPath(SONG.song) + '/'));
@@ -1316,7 +1327,7 @@ class PlayState extends MusicBeatState
 			luaFile = Paths.modFolders(luaFile);
 			doPush = true;
 		} else {
-			luaFile = Paths.getPreloadPath(luaFile);
+			luaFile = SUtil.getPath() + Paths.getPreloadPath(luaFile);
 			if(FileSystem.exists(luaFile)) {
 				doPush = true;
 			}
@@ -1481,6 +1492,10 @@ class PlayState extends MusicBeatState
 		var ret:Dynamic = callOnLuas('onStartCountdown', [], false);
 		if(ret != FunkinLua.Function_Stop) {
 			if (skipCountdown || startOnTime > 0) skipArrowStartTween = true;
+
+			#if android
+			androidControls.visible = true;
+			#end
 
 			generateStaticArrows(0);
 			generateStaticArrows(1);
@@ -1830,7 +1845,7 @@ class PlayState extends MusicBeatState
 		var songName:String = Paths.formatToSongPath(SONG.song);
 		var file:String = Paths.json(songName + '/events');
 		#if MODS_ALLOWED
-		if (FileSystem.exists(Paths.modsJson(songName + '/events')) || FileSystem.exists(file)) {
+		if (FileSystem.exists(Paths.modsJson(songName + '/events')) || FileSystem.exists(SUtil.getPath() + file)) {
 		#else
 		if (OpenFlAssets.exists(file)) {
 		#end
@@ -2254,7 +2269,7 @@ class PlayState extends MusicBeatState
 			botplayTxt.alpha = 1 - Math.sin((Math.PI * botplaySine) / 180);
 		}
 
-		if (controls.PAUSE && startedCountdown && canPause)
+		if (controls.PAUSE #if android || FlxG.android.justReleased.BACK #end && startedCountdown && canPause)
 		{
 			var ret:Dynamic = callOnLuas('onPause', [], false);
 			if(ret != FunkinLua.Function_Stop) {
@@ -3064,6 +3079,10 @@ class PlayState extends MusicBeatState
 				return;
 			}
 		}
+
+		#if android
+		androidControls.visible = false;
+		#end
 
 		timeBarBG.visible = false;
 		timeBar.visible = false;
@@ -4329,14 +4348,15 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		var mousePosMangle:FlxPoint = FlxG.mouse.getScreenPosition(camHUD);
+		var mousePosMangle:FlxPoint = FlxG.touches.getScreenPosition(0, camHUD);
 		mangleSound.play();
+		
 	
 		if (mangleMech.animation.curAnim.name == 'none') {
 			mangleMech.animation.play('in');
 		}
 	
-		if (mangleMech.overlapsPoint(mousePosMangle) && FlxG.mouse.justPressed) {
+		if (mangleMech.overlapsPoint(mousePosMangle) && FlxG.touches.touchPressed(0)) {
 			mangleAchieveFailed = true;
 			if (mangleMech.animation.curAnim.name == 'idle') {
 				mangleMech.animation.finish();
@@ -4362,8 +4382,8 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		var mousePosTablet:FlxPoint = FlxG.mouse.getScreenPosition(camOther);
-	
+		var mousePosTablet:FlxPoint = FlxG.touches.getScreenPosition(1, camOther);
+
 		if (!isTweenActive) {
 			blackOutSineIn();
 		}
@@ -4371,7 +4391,7 @@ class PlayState extends MusicBeatState
 		if (!tabletButtonPressed) {
 			tabletButton.alpha = 1;
 			tabletButton.animation.play('idle');
-			if (tabletButton.overlapsPoint(mousePosTablet) && FlxG.mouse.justPressed) {
+			if (tabletButton.overlapsPoint(mousePosTablet) && FlxG.touches.touchPressed(1)) {
 				tabletAchieveFailed = true;
 				tabletButtonPressed = true;
 				tabletMech.alpha = 1;
@@ -4382,7 +4402,7 @@ class PlayState extends MusicBeatState
 	
 		if (tabletButtonPressed) {
 			tabletButton.alpha = 0;
-			if (tabletMech.overlapsPoint(mousePosTablet) && FlxG.mouse.justPressed) {
+			if (tabletMech.overlapsPoint(mousePosTablet) && FlxG.touches.touchPressed(1)) {
 				if (tabletMech.animation.curAnim.name == 'notpressed') {
 					tabletMech.animation.finish();
 				}

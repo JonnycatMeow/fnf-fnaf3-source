@@ -4,6 +4,11 @@ package;
 import Discord.DiscordClient;
 #end
 
+#if android
+import flixel.input.touch.FlxTouch;
+import flixel.input.touch.FlxTouchManager;
+#end
+
 import editors.ChartingState;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -168,6 +173,11 @@ class FreeplayState extends MusicBeatState
 
 		/* Call our separated function for creating the difficulty selection menu */
 		createDifficultyMenu();
+
+		#if android
+		addVirtualPad(LEFT_FULL, A_B_C_X_Y_Z);
+		virtualPad.y = -26;
+		#end
 
 		super.create();
 	}
@@ -656,6 +666,9 @@ class FreeplayState extends MusicBeatState
 		}
 
 		if(FlxG.keys.justPressed.CONTROL && !isDiffTablet) {
+			#if android
+			removeVirtualPad();
+			#end
 			persistentUpdate = false;
 			openSubState(new GameplayChangersSubstate());
 		}

@@ -4,6 +4,11 @@ package;
 import Discord.DiscordClient;
 #end
 
+#if android
+import flixel.input.touch.FlxTouch;
+import flixel.input.touch.FlxTouchManager;
+#end
+
 import lime.app.Application;
 import flixel.FlxG;
 import flixel.FlxCamera;
@@ -98,6 +103,11 @@ class MainMenuState extends MusicBeatState
 				ClientPrefs.saveSettings();
 			}
 		}
+		#end
+
+		#if android
+		addVirtualPad(UP_DOWN, A_B_E);
+		virtualPad.y = -44;
 		#end
 
 		super.create();
